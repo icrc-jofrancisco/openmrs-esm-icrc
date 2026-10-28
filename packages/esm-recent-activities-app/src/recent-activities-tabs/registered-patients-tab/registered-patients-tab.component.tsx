@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dropdown } from '@carbon/react';
+import { Dropdown, InlineLoading } from '@carbon/react';
 import { RegistrationPeriod, useRecentlyRegisteredPatients } from '../../api/hooks';
 import PatientListTable from '../patient-tab/patient-list/patient-list-table.component';
 import styles from './registered-patients-tab.scss';
@@ -8,7 +8,7 @@ import styles from './registered-patients-tab.scss';
 const RegisteredPatientsTabComponent = () => {
   const { t } = useTranslation();
   const [period, setPeriod] = useState<RegistrationPeriod>('today');
-  const { patientUuids } = useRecentlyRegisteredPatients(period);
+  const { patientUuids, isLoading } = useRecentlyRegisteredPatients(period);
 
   const periods: Array<{ id: RegistrationPeriod; label: string }> = [
     { id: 'today', label: t('today', 'Today') },
@@ -23,20 +23,24 @@ const RegisteredPatientsTabComponent = () => {
         <Dropdown
           id="registered-period-dropdown"
           className={styles.dropdown}
-          titleText={t('registeredPeriod', 'Registered')}
+          titleText={t('fromDate', 'From')}
           label=""
           items={periods}
           itemToString={(item) => item?.label ?? ''}
           selectedItem={periods.find(({ id }) => id === period)}
           onChange={({ selectedItem }) => setPeriod(selectedItem.id)}
         />
-        <PatientListTable
-          patientUuids={patientUuids}
-          emptyMessage={t(
-            'emptyRegisteredPatients',
-            'There are no patients registered in this location for the selected period',
-          )}
-        />
+        {isLoading ? (
+          <InlineLoading className={styles.loading} />
+        ) : (
+          <PatientListTable
+            patientUuids={patientUuids}
+            emptyMessage={t(
+              'emptyRegisteredPatients',
+              'There are no patients registered in this location for the selected period',
+            )}
+          />
+        )}
       </section>
     </main>
   );
